@@ -7,6 +7,10 @@ const path = require("path");
 const users = require("./routes/api/users");
 const profile = require("./routes/api/profile");
 const posts = require("./routes/api/posts");
+const categories = require("./routes/api/categories");
+const subCategories = require("./routes/api/subCategories");
+const fields = require("./routes/api/fields");
+const fieldSpecs = require("./routes/api/fieldSpecs");
 
 const app = express();
 
@@ -37,6 +41,12 @@ require("./config/passport")(passport);
 app.use("/api/users", users);
 app.use("/api/profile", profile);
 app.use("/api/posts", posts);
+app.use("/api/categories", categories);
+app.use("/api/sub-categories", subCategories);
+app.use("/api/fields", fields);
+app.use("/api/field-specs", fieldSpecs);
+
+app.use(express.static("uploads"));
 
 // Server static assets if in production
 if (process.env.NODE_ENV === "production") {
