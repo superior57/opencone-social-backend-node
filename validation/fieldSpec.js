@@ -5,14 +5,14 @@ const validateFieldSpecInput = (data) => {
     let errors = {};
 
     data.name = !isEmpty(data.name) ? data.name : "";
-    data.field = !isEmpty(data.field) ? data.field : "";
+    // data.field = !isEmpty(data.field) ? data.field : "";
 
     if (Validator.isEmpty(data.name)) {
         errors.name = "Name field is required";
     }
-    if (Validator.isEmpty(data.field)) {
-        errors.field = "Field id is required"
-    }
+    // if (Validator.isEmpty(data.field)) {
+    //     errors.field = "Field id is required"
+    // }
 
     return {
         errors,

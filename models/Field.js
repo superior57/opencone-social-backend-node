@@ -8,6 +8,12 @@ const FieldSchema = new Schema({
     type: {
         type: String
     },
+    specs: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'fieldspec'
+        }
+    ],
     date: {
         type: Date,
         default: Date.now

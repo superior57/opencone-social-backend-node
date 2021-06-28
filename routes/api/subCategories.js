@@ -4,6 +4,7 @@ const router = express.Router();
 
 const SubCategory = require("../../models/SubCategory");
 const Category = require("../../models/Category");
+const Field = require("../../models/Field");
 const ValidateSubCategoryInput = require("../../validation/subCategory");
 
 router.get('/test', (req, res) => {
@@ -93,6 +94,83 @@ router.delete('/:id', async (req, res) => {
             subcategorynotfound: "No Sub Category found"
         })        
     }  
+})
+
+/**
+ * Get SubCategory
+ */
+router.get('/details/:id', async (req, res) => {
+    try {
+        const subCategory = await SubCategory.findById(req.params.id).populate({
+            path: 'fields',
+            populate: {
+                path: 'specs'
+            }
+        });
+        return res.json(subCategory);
+    } catch (error) {
+        return res.status(400).json({
+            subcategorynotfound: "No Sub Category found"
+        })        
+    }
+})
+
+/**
+ * Add Field to SubCategory
+ */
+router.post('/add-field/:subCategoryId/:fieldId', async (req, res) => {
+    const { fieldId, subCategoryId } = req.params;
+    try {
+        const field = await Field.findById(fieldId);
+        try {
+            const subCategory = await SubCategory.findById(subCategoryId);
+            if (!subCategory.fields.includes(fieldId)) {
+                subCategory.fields.push(field);
+                await subCategory.save();
+                return res.json(field);
+            }
+            return res.status(400).json({
+                fieldalreadyexists: "Field already exists"
+            })
+        } catch (error) {
+            return res.status(400).json({
+                subcategorynotfound: "No Sub Category found"
+            })            
+        }
+    } catch (error) {
+        return res.status(400).json({
+            fieldnotfound: "No Field found"
+        })        
+    }
+})
+
+/**
+ * Delete Field from SubCategory
+ */
+router.post('/delete-field/:subCategoryId/:fieldId', async (req, res) => {
+    const { fieldId, subCategoryId } = req.params;
+    try {
+        const field = await Field.findById(fieldId);
+        try {
+            const subCategory = await SubCategory.findById(subCategoryId);
+            if (subCategory.fields.includes(fieldId)) {
+                subCategory.fields.pull(field);
+                await subCategory.save();
+                return res.json(field);
+            }
+            return res.status(400).json({
+                fielddoesnotexists: "Field does not exists" 
+            })
+        } catch (error) {
+            return res.status(400).json({
+                subcategorynotfound: "No Sub Category found"
+            })            
+        }
+    } catch (error) {
+        return res.status(400).json({
+            fieldnotfound: "No Field found"
+        })        
+    }
 })
 
 module.exports = router;

@@ -11,6 +11,7 @@ const categories = require("./routes/api/categories");
 const subCategories = require("./routes/api/subCategories");
 const fields = require("./routes/api/fields");
 const fieldSpecs = require("./routes/api/fieldSpecs");
+const ads = require("./routes/api/ads");
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/categories", categories);
 app.use("/api/sub-categories", subCategories);
 app.use("/api/fields", fields);
 app.use("/api/field-specs", fieldSpecs);
+app.use("/api/ads", ads);
 
 app.use(express.static("uploads"));
 

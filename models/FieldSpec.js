@@ -7,7 +7,7 @@ const FieldSpecSchema = new Schema({
     },
     field: {
         type: Schema.Types.ObjectId,
-        ref: "field"
+        ref: 'fields'
     },
     date: {
         type: Date,
@@ -15,4 +15,4 @@ const FieldSpecSchema = new Schema({
     }
 });
 
-module.exports = FieldSpecSchema;
+module.exports = mongoose.model('fieldspec', FieldSpecSchema);

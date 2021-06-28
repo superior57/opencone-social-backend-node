@@ -45,16 +45,18 @@ router.put('/:fieldId', async (req, res) => {
         if (!isValid) {
             return res.status(400).json(errors);
         }
-
+        
         const newFieldSpec = new FieldSpec({
             name: req.body.name,
             field: field
         });
         await newFieldSpec.save();
+        field.specs.push(newFieldSpec);
+        await field.save();
         return res.json(newFieldSpec);
     } catch (error) {
         return res.status(400).json({
-            fieldspecnotfound: "No Field Spec found"
+            fieldspecnotfound: "No Field found"
         });
     }
 })
@@ -63,22 +65,20 @@ router.put('/:fieldId', async (req, res) => {
  * Update Field Spec
  */
  router.post('/:id', async (req, res) => {
-    const { errors, isValid } = ValidateFieldInput(req.body);
-    if (!isValid) {
-        return res.status(400).json(errors);
-    }
-
     try {
-        const field = await Field.findById(req.params.id);
-        field.name = req.body.name;
-        field.type = req.body.type;
-        await field.save();
-        return res.json(field);
+        const { errors, isValid } = ValidateFieldSpecInput(req.body);
+        if (!isValid) {
+            return res.status(400).json(errors);
+        }        
+        const fieldSpec = await FieldSpec.findById(req.params.id);
+        fieldSpec.name = req.body.name;
+        await fieldSpec.save();
+        return res.json(fieldSpec);
     } catch (error) {
         return res.status(400).json({
-            fieldnotfound: "No Field found"
-        })
-    }
+            fieldspecnotfound: "No Field Spec found"
+        })        
+    }   
 })
 
 /**
@@ -86,14 +86,14 @@ router.put('/:fieldId', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const field = await Field.findById(req.params.id);
-        await field.remove();
+        const fieldSpec = await FieldSpec.findById(req.params.id);
+        await fieldSpec.remove();
         return res.json({
             success: true
         });
     } catch (error) {
         return res.status(400).json({
-            fieldnotfound: "No Field found"
+            fieldspecnotfound: "No Field Spec found"
         })
     }
 })
