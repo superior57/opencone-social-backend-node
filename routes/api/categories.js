@@ -9,24 +9,32 @@ const Category = require('../../models/Category');
 // Validation
 const validateCategoryInput = require('../../validation/category');
 
-// @route   GET api/categories/test
-// @desc    Tests category route
-// @access  Public
+
+/**
+ * Tests category route
+ * @route   GET api/categories/test
+ * @access  Public
+ */
 router.get('/test', (req, res) => res.json({ msg: 'Categories Works' }));
 
-// @route   GET api/categories
-// @desc    Get categories
-// @access  Public
+/**
+ * Get Categories
+ * @route   GET api/categories
+ * @access  Public
+ */
 router.get('/', (req, res) => {
   Category.find()
-    .sort({ date: -1 })
+    .populate('subCategories')
+    // .sort({ date: -1 })
     .then(categories => res.json(categories))
     .catch(err => res.status(404).json({ nocategoriesfound: 'No categories found' }));
 });
 
-// @route   GET api/categories/:id
-// @desc    Get category by id
-// @access  Public
+/**
+ * Get category by id
+ * @route   GET api/categories/:id
+ * @access  Public
+ */
 // router.get('/:id', (req, res) => {
 //   Category.findById(req.params.id)
 //     .then(category => res.json(category))
@@ -35,9 +43,11 @@ router.get('/', (req, res) => {
 //     );
 // });
 
-// @route   POST api/categories
-// @desc    Create category
-// @access  Private
+/**
+ * Create category
+ * @route   POST api/categories
+ * @access  Private
+ */
 router.post(
   '/',
   // passport.authenticate('jwt', { session: false }),
@@ -81,9 +91,11 @@ router.post(
   }
 )
 
-// @route   DELETE api/categories/:id
-// @desc    Delete category
-// @access  Private
+/**
+ * Delete category
+ * @route   DELETE api/categories/:id
+ * @access  Private
+ */
 router.delete(
   '/:id',
   // passport.authenticate('jwt', { session: false }),
@@ -98,9 +110,11 @@ router.delete(
   }
 );
 
-// @route   POST api/categories/like/:id
-// @desc    Like category
-// @access  Private
+/**
+ * Like category
+ * @route   POST api/categories/like/:id
+ * @access  Private
+ */
 router.post(
   '/like/:id',
   passport.authenticate('jwt', { session: false }),
@@ -127,9 +141,11 @@ router.post(
   }
 );
 
-// @route   POST api/categories/unlike/:id
-// @desc    Unlike category
-// @access  Private
+/**
+ * Unlike category
+ * @route   POST api/categories/unlike/:id
+ * @access  Private
+ */
 router.post(
   '/unlike/:id',
   passport.authenticate('jwt', { session: false }),
@@ -162,9 +178,11 @@ router.post(
   }
 );
 
-// @route   POST api/categories/comment/:id
-// @desc    Add comment to category
-// @access  Private
+/**
+ * Add comment to category
+ * @route   POST api/categories/comment/:id
+ * @access  Private
+ */
 router.post(
   '/comment/:id',
   passport.authenticate('jwt', { session: false }),
@@ -196,9 +214,11 @@ router.post(
   }
 );
 
-// @route   DELETE api/categories/comment/:id/:comment_id
-// @desc    Remove comment from category
-// @access  Private
+/**
+ * Remove comment from category
+ * @route   DELETE api/categories/comment/:id/:comment_id
+ * @access  Private
+ */
 router.delete(
   '/comment/:id/:comment_id',
   passport.authenticate('jwt', { session: false }),

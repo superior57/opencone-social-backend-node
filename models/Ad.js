@@ -27,11 +27,15 @@ const AdSchema = new Schema({
             type: String
         }
     ],
-    specs: [
-        {
-            type: String
-        }
-    ],
+    specs: {
+        type: JSON,
+    },
+    price: {
+        type: Number
+    },
+    currency: {
+        type: String
+    },
     date: {
         type: Date,
         default: Date.now

@@ -38,6 +38,9 @@ router.get('/test', (req, res) => {
     })
 })
 
+/**
+ * Add New AD
+ */
 router.put('/', upload.array('images', 10), async (req, res) => {
     try {        
         const { errors, isValid } = ValidateAdInput(req.body);
@@ -60,7 +63,9 @@ router.put('/', upload.array('images', 10), async (req, res) => {
             contact_name: req.body.contactName,
             contact_email: req.body.contactEmail,
             specs: JSON.parse(req.body.specs),
-            images
+            images,
+            price: req.body.price,
+            currency: req.body.currency
         });
         newAd.save();
         return res.json(newAd);
@@ -69,6 +74,58 @@ router.put('/', upload.array('images', 10), async (req, res) => {
             categoryorsubcategorynotfound: "No Category or SubCategory found"
         })        
     }
+})
+
+router.post('/', async (req, res) => {
+  const {
+    category,
+    subCategory,
+    specs,
+    price
+  } = req.body;
+
+  const filter = {};
+  if (subCategory) {
+    filter.sub_category = subCategory;
+  }
+
+  if (specs) {
+    Object.keys(specs).forEach(spec => {
+      if (specs[spec].from || specs[spec].to) {
+        filter[`specs.${spec}`] = {
+          $gte: specs[spec].from !== '' ? specs[spec].from : '0',
+          $lte: specs[spec].to !== '' ? specs[spec].to : '2100'
+        };
+      } else {        
+        filter[`specs.${spec}`] = specs[spec];
+      }
+    })
+  }
+  if (price) {      
+    if (price.from) 
+      filter.price = {
+        $gte: price.from
+      }
+    if (price.to) 
+      filter.price = {
+        ...filter.price,
+        $lte: price.to
+    }
+  }
+  const newFilters = {};
+  Object.keys(filter).forEach(f => {
+    if (typeof filter[f] !== 'object' || (Object.keys(filter[f]).length > 0 || filter[f].length > 0)) {
+      newFilters[f] = filter[f];
+    }
+  })
+  try {
+    const ads = await Ad.find(newFilters).populate('sub_category').sort({
+      date: -1
+    });
+    return res.json(ads)
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 module.exports = router;

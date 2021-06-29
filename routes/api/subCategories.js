@@ -54,8 +54,10 @@ router.put('/:categoryId', async (req, res) => {
             name: req.body.name,
             category: category
         });
-        const subCategory = await newSubCategory.save();
-        return res.json(subCategory);
+        await newSubCategory.save();
+        category.subCategories.push(newSubCategory);
+        await category.save();
+        return res.json(newSubCategory);
     } catch (error) {
         return res.status(400).json({
             categorynotfound: "No Category found"
@@ -87,9 +89,13 @@ router.post('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {    
         const subCategory = await SubCategory.findById(req.params.id);
+        const category = await Category.findById(subCategory.category);
+        category.subCategories.pull(subCategory);
+        await category.save();
         await subCategory.remove();
         return res.json({ success: true });
     } catch (error) {
+        console.log(error);
         return res.status(400).json({
             subcategorynotfound: "No Sub Category found"
         })        
