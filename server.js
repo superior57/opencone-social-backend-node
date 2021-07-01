@@ -12,6 +12,8 @@ const subCategories = require("./routes/api/subCategories");
 const fields = require("./routes/api/fields");
 const fieldSpecs = require("./routes/api/fieldSpecs");
 const ads = require("./routes/api/ads");
+const cities = require("./routes/api/cities");
+const subCities = require("./routes/api/subCities");
 const rimraf = require('rimraf');
 
 const app = express();
@@ -53,6 +55,8 @@ app.use("/api/sub-categories", subCategories);
 app.use("/api/fields", fields);
 app.use("/api/field-specs", fieldSpecs);
 app.use("/api/ads", ads);
+app.use("/api/cities", cities);
+app.use("/api/sub-cities", subCities);
 
 app.use(express.static("uploads"));
 

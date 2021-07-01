@@ -10,7 +10,7 @@ const AdSchema = new Schema({
     },
     category: {
         type: Schema.Types.ObjectId,
-        ref: 'category'
+        ref: 'categories'
     },
     sub_category: {
         type: Schema.Types.ObjectId,
@@ -35,6 +35,18 @@ const AdSchema = new Schema({
     },
     currency: {
         type: String
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'users'
+    },
+    city: {
+        type: Schema.Types.ObjectId,
+        ref: 'cities'
+    },
+    subCity: {
+        type: Schema.Types.ObjectId,
+        ref: 'subcities'
     },
     date: {
         type: Date,

@@ -32,7 +32,6 @@ router.put('/', async (req, res) => {
     if (!isValid) {
         return res.status(400).json(errors);
     }
-
     const newField = new Field({
         name: req.body.name,
         type: req.body.type

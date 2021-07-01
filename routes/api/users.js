@@ -145,7 +145,8 @@ router.get(
       name: req.user.name,
       email: req.user.email,
       avatar: req.user.avatar,
-      role: req.user.role
+      role: req.user.role,
+      gender: req.user.gender
     });
   }
 );

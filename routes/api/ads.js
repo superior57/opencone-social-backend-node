@@ -7,6 +7,10 @@ const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
 const ValidateAdInput = require("../../validation/ad");
+const passport = require('passport');
+const User = require('../../models/User');
+const City = require('../../models/City');
+const SubCity = require('../../models/SubCity');
 
 const DIR = 'uploads/ads/';
 
@@ -32,7 +36,9 @@ var upload = multer({
   }
 });
 
-router.get('/test', (req, res) => {
+router.get('/test', 
+passport.authenticate('jwt', { session: false }),
+(req, res) => {
     return res.json({
         msg: "Ad test works"
     })
@@ -41,90 +47,125 @@ router.get('/test', (req, res) => {
 /**
  * Add New AD
  */
-router.put('/', upload.array('images', 10), async (req, res) => {
-    try {        
-        const { errors, isValid } = ValidateAdInput(req.body);
-        if (!isValid) {
-            return res.status(400).json(errors);
+router.put('/', 
+  passport.authenticate('jwt', { session: false }), 
+  upload.array('images', 10), 
+  async (req, res) => {
+      try {     
+          const { errors, isValid } = ValidateAdInput(req.body);
+          if (!isValid) {
+              return res.status(400).json(errors);
+          }
+
+          const images = [];
+          req.files?.forEach(file => {
+              images.push("/ads/" + file.filename);
+          })
+
+          const category = await Category.findById(req.body.category);
+          const subCategory = await SubCategory.findById(req.body.subCategory);
+          const city = await City.findById(req.body.city);
+          const subCity = await SubCity.findById(req.body.subCity);
+          const user = await User.findById(req.user._id);
+          const newAd = new Ad({
+              title: req.body.title,
+              description: req.body.description,
+              category,
+              sub_category: subCategory,
+              contact_name: req.body.contactName,
+              contact_email: req.body.contactEmail,
+              specs: JSON.parse(req.body.specs),
+              images,
+              price: req.body.price,
+              currency: req.body.currency,
+              user,
+              city,
+              subCity
+          });
+          newAd.save();
+          return res.json(newAd);
+      } catch (error) {
+          return res.status(400).json({
+              categoryorsubcategorynotfound: "No Category or SubCategory found"
+          })        
+      }
+  })
+
+router.post('/', 
+passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const { category, subCategory, specs, price, city, subCity } = req.body;
+    const filter = {};
+    if (subCategory) filter.sub_category = subCategory;
+    else if (category) filter.category = category;
+
+    if (specs) {
+      Object.keys(specs).forEach(spec => {
+        if (specs[spec].from || specs[spec].to) {
+          filter[`specs.${spec}`] = {
+            $gte: specs[spec].from !== '' ? specs[spec].from : '0',
+            $lte: specs[spec].to !== '' ? specs[spec].to : '2100'
+          };
+        } else {        
+          filter[`specs.${spec}`] = specs[spec];
         }
-
-        const images = [];
-        req.files?.forEach(file => {
-            images.push("/ads/" + file.filename);
-        })
-
-        const category = await Category.findById(req.body.category);
-        const subCategory = await SubCategory.findById(req.body.subCategory);
-        const newAd = new Ad({
-            title: req.body.title,
-            description: req.body.description,
-            category,
-            sub_category: subCategory,
-            contact_name: req.body.contactName,
-            contact_email: req.body.contactEmail,
-            specs: JSON.parse(req.body.specs),
-            images,
-            price: req.body.price,
-            currency: req.body.currency
-        });
-        newAd.save();
-        return res.json(newAd);
+      })
+    }
+    if (price) {      
+      if (price.from) filter.price = { $gte: price.from }
+      if (price.to) filter.price = { ...filter.price, $lte: price.to }
+    }   
+    if (city) filter.city = city
+    if (subCity) filter.subCity = subCity
+    
+    
+    try {
+      const ads = await Ad.find(filterValidation(filter))
+      .populate(['sub_category', 'user'])
+      .sort({ date: -1 });
+      
+      return res.json(ads)
     } catch (error) {
-        return res.status(400).json({
-            categoryorsubcategorynotfound: "No Category or SubCategory found"
-        })        
-    }
-})
-
-router.post('/', async (req, res) => {
-  const {
-    category,
-    subCategory,
-    specs,
-    price
-  } = req.body;
-
-  const filter = {};
-  if (subCategory) {
-    filter.sub_category = subCategory;
-  }
-
-  if (specs) {
-    Object.keys(specs).forEach(spec => {
-      if (specs[spec].from || specs[spec].to) {
-        filter[`specs.${spec}`] = {
-          $gte: specs[spec].from !== '' ? specs[spec].from : '0',
-          $lte: specs[spec].to !== '' ? specs[spec].to : '2100'
-        };
-      } else {        
-        filter[`specs.${spec}`] = specs[spec];
-      }
-    })
-  }
-  if (price) {      
-    if (price.from) 
-      filter.price = {
-        $gte: price.from
-      }
-    if (price.to) 
-      filter.price = {
-        ...filter.price,
-        $lte: price.to
-    }
-  }
-  const newFilters = {};
-  Object.keys(filter).forEach(f => {
-    if (typeof filter[f] !== 'object' || (Object.keys(filter[f]).length > 0 || filter[f].length > 0)) {
-      newFilters[f] = filter[f];
+      console.log(error);
     }
   })
+
+  const filterValidation = filter => {
+    const returnFilters = {};
+    Object.keys(filter).forEach(f => {
+      if (typeof filter[f] !== 'object' || (Object.keys(filter[f]).length > 0 || filter[f].length > 0)) {
+        returnFilters[f] = filter[f];
+      }
+    })
+    return returnFilters;
+  }
+
+router.get('/:id', async (req, res) => {
   try {
-    const ads = await Ad.find(newFilters).populate('sub_category').sort({
-      date: -1
-    });
-    return res.json(ads)
+    const ad = await Ad.findById(req.params.id)
+    .populate([
+      {
+        path: "sub_category",
+        populate: {
+          path: "category"
+        }
+      },
+      "category", 
+      "user", 
+      "city", 
+      {
+        path: "subCity",
+        populate: {
+          path: "city"
+        }
+      }
+    ])
+    return res.json(ad);
   } catch (error) {
     console.log(error);
+    return res.status(400).json({
+      adnotfound: "No ad found"
+    })    
   }
 })
 
