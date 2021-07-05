@@ -11,6 +11,7 @@ const passport = require('passport');
 const User = require('../../models/User');
 const City = require('../../models/City');
 const SubCity = require('../../models/SubCity');
+const Field = require('../../models/Field');
 
 const DIR = 'uploads/ads/';
 
@@ -27,12 +28,12 @@ const storage = multer.diskStorage({
 var upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
-    cb(null, true);
-  } else {
-    cb(null, false);
-    return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
-  }
+    // if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+      cb(null, true);
+    // } else {
+    //   cb(null, false);
+    //   return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+    // }
   }
 });
 
@@ -47,7 +48,7 @@ passport.authenticate('jwt', { session: false }),
 /**
  * Add New AD
  */
-router.put('/', 
+  router.put('/', 
   passport.authenticate('jwt', { session: false }), 
   upload.array('images', 10), 
   async (req, res) => {
@@ -91,8 +92,11 @@ router.put('/',
       }
   })
 
-router.post('/', 
-passport.authenticate('jwt', { session: false }),
+  /**
+   * Search Ads
+   */
+  router.post('/', 
+  passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     const { category, subCategory, specs, price, city, subCity } = req.body;
     const filter = {};
@@ -140,6 +144,35 @@ passport.authenticate('jwt', { session: false }),
     return returnFilters;
   }
 
+  const getFieldNameById = async (fieldId) => {
+    try {
+      const field = await Field.findById(fieldId);
+      return field.name;
+    } catch (error) {
+      console.log(error);
+      return {
+        error: {
+          fieldnotfound: "No field found"
+        }
+      }      
+    }
+  }
+
+  const getFieldData = async (specs) => {
+    const resObj = await Promise.all(Object.keys(specs).map(async (fieldId) => {
+      const fData = specs[fieldId];
+      const name = await getFieldNameById(fieldId);
+      return {
+        title: name,
+        value: fData
+      }
+    }))
+    return resObj;
+  }
+
+/**
+ * Get Ad Details
+ */
 router.get('/:id', async (req, res) => {
   try {
     const ad = await Ad.findById(req.params.id)
@@ -160,6 +193,11 @@ router.get('/:id', async (req, res) => {
         }
       }
     ])
+    
+    if (ad.specs) {
+      const fieldData = await getFieldData(ad.specs);
+      ad._doc.fieldData = fieldData;    
+    }
     return res.json(ad);
   } catch (error) {
     console.log(error);
@@ -167,6 +205,6 @@ router.get('/:id', async (req, res) => {
       adnotfound: "No ad found"
     })    
   }
-})
+});
 
 module.exports = router;
