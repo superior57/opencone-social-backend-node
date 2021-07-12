@@ -12,6 +12,7 @@ const User = require('../../models/User');
 const City = require('../../models/City');
 const SubCity = require('../../models/SubCity');
 const Field = require('../../models/Field');
+const Comment = require('../../models/Comment');
 
 const DIR = 'uploads/ads/';
 
@@ -36,6 +37,35 @@ var upload = multer({
     // }
   }
 });
+
+populates = [
+  {
+    path: "sub_category",
+    populate: {
+      path: "category"
+    }
+  },
+  "category", 
+  "user", 
+  "city", 
+  {
+    path: "subCity",
+    populate: {
+      path: "city"
+    }
+  },
+  {
+    path: "comments",
+    populate: {
+      path: "user"
+    },
+    options: {
+      sort: {
+        date: -1
+      }
+    }
+  }
+]
 
 router.get('/test', 
 passport.authenticate('jwt', { session: false }),
@@ -125,7 +155,7 @@ passport.authenticate('jwt', { session: false }),
     
     try {
       const ads = await Ad.find(filterValidation(filter))
-      .populate(['sub_category', 'user'])
+      .populate(['sub_category', 'user', 'category'])
       .sort({ date: -1 });
       
       return res.json(ads)
@@ -176,23 +206,7 @@ passport.authenticate('jwt', { session: false }),
 router.get('/:id', async (req, res) => {
   try {
     const ad = await Ad.findById(req.params.id)
-    .populate([
-      {
-        path: "sub_category",
-        populate: {
-          path: "category"
-        }
-      },
-      "category", 
-      "user", 
-      "city", 
-      {
-        path: "subCity",
-        populate: {
-          path: "city"
-        }
-      }
-    ])
+    .populate(populates)
     
     if (ad.specs) {
       const fieldData = await getFieldData(ad.specs);
@@ -206,5 +220,47 @@ router.get('/:id', async (req, res) => {
     })    
   }
 });
+
+/**
+ * Update Ad
+ */
+router.post('/:id', async (req, res) => {
+  const ad = await Ad.findById(req.params.id)
+  .populate(populates);
+  if (ad) {
+    Object.keys(req.body).forEach(key => {
+      ad[key] = req.body[key];
+    });
+    await ad.save();
+    return res.json(ad);
+  } else {
+    return res.status(400).json({
+      cannotfindad: "No Ad find"
+    })
+  }
+})
+
+// router.post('/boost/:id', async (req, res) => {
+//   const ad = await Ad.findById(req.params.id);
+//   if (ad) {
+
+//   }
+// })
+
+router.post('/comments/:adId', 
+passport.authenticate('jwt', { session: false }),
+async (req, res) => {
+  const ad = await Ad.findById(req.params.adId);
+  const newComment = new Comment({
+    ad,
+    message: req.body.message,
+    user: req.user
+  })
+  await newComment.save();
+  ad.comments.push(newComment);
+  await ad.save();
+  const updatedAd = await Ad.findById(req.params.adId).populate(populates);
+  return res.json(updatedAd);
+})
 
 module.exports = router;

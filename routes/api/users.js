@@ -109,6 +109,10 @@ router.post('/login', (req, res) => {
       errors.email = 'User not found';
       return res.status(404).json(errors);
     }
+    if (user.is_blocked == 1) {
+      errors.email = 'Your account has been blocked';
+      return res.status(400).json(errors);
+    }
 
     // Check Password
     bcrypt.compare(password, user.password).then(isMatch => {
@@ -225,6 +229,8 @@ async (req, res) => {
     user.email = req.body.email;
     user.gender = req.body.gender;
     user.role = req.body.role;
+    user.is_blocked = req.body.is_blocked;
+    
 
     if (req.file) {
       const avatar = "/avatars/" + req.file.filename;      
@@ -245,7 +251,7 @@ async (req, res) => {
     }
   } else {
     return res.status(400).json({
-      youdonthavepermission: "You don't have permission to delete User"
+      youdonthavepermission: "You don't have permission to update User"
     })
   }
 })

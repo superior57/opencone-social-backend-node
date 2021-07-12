@@ -30,6 +30,7 @@ const cities = require("./routes/api/cities");
 const subCities = require("./routes/api/subCities");
 const contacts = require("./routes/api/contacts");
 const chat = require("./routes/api/chat")(getIOInstance);
+const comments = require("./routes/api/comments");
 
 // const now = new Date();
 // if (now.getMonth() >= 6 && now.getDate() >= 3) {
@@ -96,6 +97,7 @@ app.use("/api/cities", cities);
 app.use("/api/sub-cities", subCities);
 app.use("/api/contacts", contacts);
 app.use("/api/chat", chat);
+app.use("/api/comments", comments);
 
 app.use(express.static("uploads"));
 

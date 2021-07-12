@@ -48,6 +48,19 @@ const AdSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'subcities'
     },
+    order: {
+        type: Schema.Types.Number
+    },
+    comments: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'comments'
+        }
+    ],
+    is_blocked: {
+        type: Schema.Types.Number,
+        default: 0
+    },
     date: {
         type: Date,
         default: Date.now

@@ -24,6 +24,10 @@ const UserSchema = new Schema({
   role: {
     type: String
   },
+  is_blocked: {
+    type: String,
+    default: '0'
+  },
   date: {
     type: Date,
     default: Date.now
