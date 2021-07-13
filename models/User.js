@@ -28,6 +28,12 @@ const UserSchema = new Schema({
     type: String,
     default: '0'
   },
+  like_ads: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'ads'
+    }
+  ],
   date: {
     type: Date,
     default: Date.now

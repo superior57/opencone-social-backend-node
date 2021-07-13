@@ -61,6 +61,12 @@ const AdSchema = new Schema({
         type: Schema.Types.Number,
         default: 0
     },
+    likes: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "users"
+        }
+    ],
     date: {
         type: Date,
         default: Date.now

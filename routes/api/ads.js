@@ -13,6 +13,7 @@ const City = require('../../models/City');
 const SubCity = require('../../models/SubCity');
 const Field = require('../../models/Field');
 const Comment = require('../../models/Comment');
+const user = require('../../validation/user');
 
 const DIR = 'uploads/ads/';
 
@@ -39,15 +40,15 @@ var upload = multer({
 });
 
 populates = [
+  "category", 
+  "user", 
+  "city", 
   {
     path: "sub_category",
     populate: {
       path: "category"
     }
   },
-  "category", 
-  "user", 
-  "city", 
   {
     path: "subCity",
     populate: {
@@ -64,7 +65,7 @@ populates = [
         date: -1
       }
     }
-  }
+  },
 ]
 
 router.get('/test', 
@@ -259,6 +260,19 @@ async (req, res) => {
   await newComment.save();
   ad.comments.push(newComment);
   await ad.save();
+  const updatedAd = await Ad.findById(req.params.adId).populate(populates);
+  return res.json(updatedAd);
+})
+
+router.post('/likes/:adId', 
+passport.authenticate('jwt', { session: false }),
+async (req, res) => {
+  const ad = await Ad.findById(req.params.adId);
+  ad.likes.push(req.user);
+  await ad.save();
+  const user = await User.findById(req.user._id);
+  user.like_ads.push(ad);
+  await user.save();
   const updatedAd = await Ad.findById(req.params.adId).populate(populates);
   return res.json(updatedAd);
 })

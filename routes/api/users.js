@@ -228,15 +228,15 @@ async (req, res) => {
     user.name = req.body.name;
     user.email = req.body.email;
     user.gender = req.body.gender;
-    user.role = req.body.role;
-    user.is_blocked = req.body.is_blocked;
+    if (req.body.role) user.role = req.body.role;
+    if (req.body.is_blocked) user.is_blocked = req.body.is_blocked;
     
 
     if (req.file) {
       const avatar = "/avatars/" + req.file.filename;      
       user.avatar = avatar;
     }
-    if (req.body.password) {
+    if (req.body.password && req.body.pass == true) {
       bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(req.body.password, salt, async (err, hash) => {
           if (err) throw err;
