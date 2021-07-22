@@ -233,6 +233,12 @@ router.post('/:id', async (req, res) => {
       ad[key] = req.body[key];
     });
     await ad.save();
+    if (req.body.boost) {
+      const user = await User.findById(ad.user);
+      user.boost_credits = user.boost_credits - 1;
+      await user.save();
+      return res.json(ad);
+    }
     return res.json(ad);
   } else {
     return res.status(400).json({

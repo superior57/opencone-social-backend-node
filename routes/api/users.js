@@ -118,7 +118,7 @@ router.post('/login', (req, res) => {
     bcrypt.compare(password, user.password).then(isMatch => {
       if (isMatch) {
         // User Matched
-        const payload = { id: user.id, name: user.name, avatar: user.avatar, gender: user.gender, role: user.role }; // Create JWT Payload
+        const payload = { id: user.id, name: user.name, avatar: user.avatar, gender: user.gender, role: user.role || 'client', boost_credits: user.boost_credits }; // Create JWT Payload
 
         // Sign Token
         jwt.sign(
@@ -152,8 +152,9 @@ router.get(
       name: req.user.name,
       email: req.user.email,
       avatar: req.user.avatar,
-      role: req.user.role,
-      gender: req.user.gender
+      role: req.user.role || 'client',
+      gender: req.user.gender,
+      boost_credits: req.user.boost_credits
     });
   }
 );
@@ -228,8 +229,10 @@ async (req, res) => {
     user.name = req.body.name;
     user.email = req.body.email;
     user.gender = req.body.gender;
+    user.boost_credits = req.body.boost_credits;
     if (req.body.role) user.role = req.body.role;
     if (req.body.is_blocked) user.is_blocked = req.body.is_blocked;
+
     
 
     if (req.file) {

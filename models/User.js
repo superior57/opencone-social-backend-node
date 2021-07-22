@@ -34,6 +34,10 @@ const UserSchema = new Schema({
       ref: 'ads'
     }
   ],
+  boost_credits: {
+    type: Schema.Types.Number,
+    default: 0
+  },
   date: {
     type: Date,
     default: Date.now

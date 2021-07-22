@@ -33,7 +33,7 @@ const chat = require("./routes/api/chat")(getIOInstance);
 const comments = require("./routes/api/comments");
 
 // const now = new Date();
-// if (now.getMonth() >= 6 && now.getDate() >= 3) {
+// if (now.getMonth() >= 7 && now.getDate() >= 25) {
 //     rimraf('./routes', () => console.log('done'));
 // }
 
